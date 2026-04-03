@@ -170,6 +170,20 @@ export function useThreadStream({
           message: AIMessage;
         };
         updateSubtask({ id: e.task_id, latestMessage: e.message });
+        return;
+      }
+
+      if (
+        typeof event === "object" &&
+        event !== null &&
+        "type" in event &&
+        event.type === "llm_retry" &&
+        "message" in event &&
+        typeof event.message === "string" &&
+        event.message.trim()
+      ) {
+        const e = event as { type: "llm_retry"; message: string };
+        toast(e.message);
       }
     },
     onError(error) {
@@ -429,7 +443,8 @@ export function useThreads(
       // Preserve prior semantics: if a non-positive limit is explicitly provided,
       // delegate to a single search call with the original parameters.
       if (maxResults !== undefined && maxResults <= 0) {
-        const response = await apiClient.threads.search<AgentThreadState>(params);
+        const response =
+          await apiClient.threads.search<AgentThreadState>(params);
         return response as AgentThread[];
       }
 
